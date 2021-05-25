@@ -10,7 +10,7 @@ namespace TLC
 {      
     public class DB
     {
-        public static string Conn = "DATA SOURCE=fileserver;initial catalog=PI20120204;USER ID=YHLIN;password=";
+        public static string Conn = "Data Source = (localdb)\\MSSQLLocalDB;Initial Catalog = WinFormTest; Integrated Security = True";
         /// <summary>
         /// 取得新的DataTable
         /// </summary>
