@@ -38,6 +38,7 @@
             this.btnLoadAll = new System.Windows.Forms.Button();
             this.listView1 = new System.Windows.Forms.ListView();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.btnDelete = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.SuspendLayout();
@@ -89,7 +90,7 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Location = new System.Drawing.Point(14, 203);
+            this.pictureBox1.Location = new System.Drawing.Point(14, 219);
             this.pictureBox1.Name = "pictureBox1";
             this.pictureBox1.Size = new System.Drawing.Size(555, 265);
             this.pictureBox1.TabIndex = 7;
@@ -97,7 +98,7 @@
             // 
             // btnDownload
             // 
-            this.btnDownload.Location = new System.Drawing.Point(487, 174);
+            this.btnDownload.Location = new System.Drawing.Point(103, 190);
             this.btnDownload.Name = "btnDownload";
             this.btnDownload.Size = new System.Drawing.Size(75, 23);
             this.btnDownload.TabIndex = 8;
@@ -106,7 +107,7 @@
             // 
             // btnLoadAll
             // 
-            this.btnLoadAll.Location = new System.Drawing.Point(406, 174);
+            this.btnLoadAll.Location = new System.Drawing.Point(22, 190);
             this.btnLoadAll.Name = "btnLoadAll";
             this.btnLoadAll.Size = new System.Drawing.Size(75, 23);
             this.btnLoadAll.TabIndex = 10;
@@ -118,7 +119,7 @@
             this.listView1.HideSelection = false;
             this.listView1.Location = new System.Drawing.Point(14, 75);
             this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(555, 93);
+            this.listView1.Size = new System.Drawing.Size(555, 105);
             this.listView1.TabIndex = 11;
             this.listView1.UseCompatibleStateImageBehavior = false;
             // 
@@ -136,11 +137,21 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "上傳圖檔";
             // 
+            // btnDelete
+            // 
+            this.btnDelete.Location = new System.Drawing.Point(184, 190);
+            this.btnDelete.Name = "btnDelete";
+            this.btnDelete.Size = new System.Drawing.Size(75, 23);
+            this.btnDelete.TabIndex = 13;
+            this.btnDelete.Text = "Delete";
+            this.btnDelete.UseVisualStyleBackColor = true;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(580, 480);
+            this.ClientSize = new System.Drawing.Size(580, 491);
+            this.Controls.Add(this.btnDelete);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.listView1);
             this.Controls.Add(this.btnLoadAll);
@@ -150,7 +161,7 @@
             this.MinimizeBox = false;
             this.Name = "Form1";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
-            this.Text = "save and retrieve image from database";
+            this.Text = "Save and retrieve image from database";
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.groupBox1.PerformLayout();
@@ -170,6 +181,7 @@
         private System.Windows.Forms.Button btnLoadAll;
         private System.Windows.Forms.ListView listView1;
         private System.Windows.Forms.GroupBox groupBox1;
+        private System.Windows.Forms.Button btnDelete;
     }
 }
 

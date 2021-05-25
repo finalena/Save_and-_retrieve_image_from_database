@@ -33,23 +33,30 @@ namespace WindowsFormsApp1
     
             this.listView1.SelectedIndexChanged += ListView1_SelectedIndexChanged;
             this.btnChooseFile.Click += Button_Click;
-            this.btnUpload.Click += Button_Click;
             this.btnCancel.Click += Button_Click;
-            this.btnDownload.Click += Button_Click;
             this.btnLoadAll.Click += Button_Click;
+            this.btnUpload.Click += Button_Click;
+            this.btnDownload.Click += Button_Click;
+            this.btnDelete.Click += Button_Click;
         }
 
         private void InitTitle()
         {
             this.lblChooseFile.Text = "No file chosen";
             this.pictureBox1.ImageLocation = null;
+            this.pictureBox1.Image = null;
         }
 
         private void ListView1_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (this.listView1.FocusedItem != null)
             {
-                this.pictureBox1.Image = ConvertBinaryToImage(list[listView1.FocusedItem.Index].img_data);
+                Image img = ConvertBinaryToImage(list[listView1.FocusedItem.Index].img_data);
+                if (img == null)
+                {
+                    TLC.MsgBox.Show("圖片載入失敗", this.Text);
+                }
+                this.pictureBox1.Image = img;
             }
         }
 
@@ -67,80 +74,31 @@ namespace WindowsFormsApp1
                 openFileDialog.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
                 if (openFileDialog.ShowDialog() == DialogResult.OK)
                 {
-                    
                     this.lblChooseFile.Text = openFileDialog.SafeFileName;
                     this.pictureBox1.ImageLocation = openFileDialog.FileName;
                 }
             }
+            else if (sender.Equals(this.btnLoadAll))
+            {
+                GetImage();
+            }
             else if (sender.Equals(this.btnUpload))
             {
-                if (this.pictureBox1.ImageLocation == null) 
+                if (this.pictureBox1.Image == null) 
                 {
                     TLC.MsgBox.Show("請選擇要上傳的圖檔", this.Text);
                     return;
                 }
 
-                byte[] aryByte = ConvertImageToBinary(this.pictureBox1.ImageLocation);
-                string sql = "Insert Into BinaryImg(cre_date,cre_time,usr_code,per_code,img_data,img_name,img_size) " +
-                             " Values(@cre_date,@cre_time,@usr_code,@per_code,@img_data,@img_name,@img_size)";
-                SqlConnection conn = new SqlConnection(Conn);
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                cmd.Parameters.AddWithValue("@cre_date", DateTime.Now.ToString("yyyy/MM/dd"));
-                cmd.Parameters.AddWithValue("@cre_time", DateTime.Now.ToString("HH:mm:ss"));
-                cmd.Parameters.AddWithValue("@usr_code", "User");
-                cmd.Parameters.AddWithValue("@per_code", "");
-                cmd.Parameters.AddWithValue("@img_data", aryByte);
-                cmd.Parameters.AddWithValue("@img_name", this.lblChooseFile.Text);
-                cmd.Parameters.AddWithValue("@img_size", (aryByte.Length / 1024.0).ToString("0.00"));
-                conn.Open();
-                cmd.ExecuteNonQuery();
-                cmd.Parameters.Clear();
-                cmd.Dispose();
-                conn.Close();
-
+                AddImage();
                 TLC.MsgBox.Show("圖片上傳完成", this.Text);
                 InitTitle();
-            }
-            else if (sender.Equals(this.btnLoadAll))
-            {
-                this.listView1.Items.Clear();
-                list = new List<BinaryImg>();
-
-                string sql = "select * from BinaryImg order by ser_no";
-                SqlConnection conn = new SqlConnection(Conn);
-                SqlCommand cmd = new SqlCommand(sql, conn);
-                conn.Open();
-                SqlDataReader dr = cmd.ExecuteReader();
-
-                if (dr.HasRows)
-                {
-                    while (dr.Read())
-                    {
-                        list.Add(new BinaryImg{
-                            cre_date = (string)dr["cre_date"],
-                            cre_time = (string)dr["cre_time"],
-                            usr_code = (string)dr["usr_code"],
-                            per_code = (string)dr["per_code"],
-                            img_data = (byte[])dr["img_data"],
-                            img_name = (string)dr["img_name"],
-                            img_size = (string)dr["img_size"]
-                        });
-                    }
-                }
-                cmd.Dispose();
-                conn.Close();
-
-                foreach (BinaryImg Img in list)
-                {
-                    ListViewItem item = new ListViewItem(Img.img_name);
-                    listView1.Items.Add(item);
-                }
             }
             else if (sender.Equals(this.btnDownload))
             {
                 if (this.listView1.FocusedItem != null)
                 {
-                    string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "/" + list[this.listView1.FocusedItem.Index].img_name;
+                    string path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop) + "\\" + list[this.listView1.FocusedItem.Index].img_name;
                     using (FileStream fs = new FileStream(path, FileMode.Create))
                     {
                         byte[] aryWrite = list[this.listView1.FocusedItem.Index].img_data;
@@ -148,6 +106,19 @@ namespace WindowsFormsApp1
                     }
 
                     TLC.MsgBox.Show("檔案下載完成: " + path, this.Text);
+                }
+            }
+            else if (sender.Equals(this.btnDelete))
+            {
+                if (this.listView1.FocusedItem != null)
+                {
+                    if (TLC.MsgBox.Show("是否確定要刪除這筆資料?", this.Text, TLC.CM.MBB.YesNo) == DialogResult.Yes)
+                    {
+                        DeleteImage();
+                        TLC.MsgBox.Show("已刪除圖檔", this.Text);
+                        GetImage();
+                        InitTitle();
+                    }
                 }
             }
         }
@@ -167,8 +138,82 @@ namespace WindowsFormsApp1
         {
             using (MemoryStream ms = new MemoryStream(data))
             {
+                if (ms.Length == 0) return null;
                 return Image.FromStream(ms);
             }
+        }
+
+        private void GetImage()
+        {
+            this.listView1.Items.Clear();
+            list = new List<BinaryImg>();
+
+            string sql = "select * from BinaryImg order by ser_no";
+            SqlConnection conn = new SqlConnection(Conn);
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            conn.Open();
+            SqlDataReader dr = cmd.ExecuteReader();
+
+            if (dr.HasRows)
+            {
+                while (dr.Read())
+                {
+                    list.Add(new BinaryImg
+                    {
+                        ser_no = (int)dr["ser_no"],
+                        cre_date = (string)dr["cre_date"],
+                        cre_time = (string)dr["cre_time"],
+                        usr_code = (string)dr["usr_code"],
+                        per_code = (string)dr["per_code"],
+                        img_data = (byte[])dr["img_data"],
+                        img_name = (string)dr["img_name"],
+                        img_size = (string)dr["img_size"]
+                    });
+                }
+            }
+            cmd.Dispose();
+            conn.Close();
+
+            foreach (BinaryImg Img in list)
+            {
+                ListViewItem item = new ListViewItem(Img.img_name);
+                listView1.Items.Add(item);
+            }
+        }
+
+        private void AddImage()
+        {
+            byte[] aryByte = ConvertImageToBinary(this.pictureBox1.ImageLocation);
+            string sql = "Insert Into BinaryImg(cre_date,cre_time,usr_code,per_code,img_data,img_name,img_size) " +
+                         " Values(@cre_date,@cre_time,@usr_code,@per_code,@img_data,@img_name,@img_size)";
+            
+            SqlConnection conn = new SqlConnection(Conn);
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            cmd.Parameters.AddWithValue("@cre_date", DateTime.Now.ToString("yyyy/MM/dd"));
+            cmd.Parameters.AddWithValue("@cre_time", DateTime.Now.ToString("HH:mm:ss"));
+            cmd.Parameters.AddWithValue("@usr_code", "User");
+            cmd.Parameters.AddWithValue("@per_code", "");
+            cmd.Parameters.AddWithValue("@img_data", aryByte);
+            cmd.Parameters.AddWithValue("@img_name", this.lblChooseFile.Text);
+            cmd.Parameters.AddWithValue("@img_size", (aryByte.Length / 1024.0).ToString("0.00"));
+            conn.Open();
+            cmd.ExecuteNonQuery();
+
+            cmd.Parameters.Clear();
+            cmd.Dispose();
+            conn.Close();
+        }
+
+        private void DeleteImage()
+        {
+            string sql = "Delete BinaryImg where ser_no = " + list[this.listView1.FocusedItem.Index].ser_no;
+            SqlConnection conn = new SqlConnection(Conn);
+            SqlCommand cmd = new SqlCommand(sql, conn);
+            conn.Open();
+            cmd.ExecuteNonQuery();
+
+            cmd.Dispose();
+            conn.Close();
         }
     }
 }
