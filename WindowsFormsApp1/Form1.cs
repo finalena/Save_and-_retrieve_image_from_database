@@ -14,6 +14,7 @@ namespace WindowsFormsApp1
 {
     public partial class Form1 : Form
     {
+    //Test
         private static string Conn = "Data Source = (localdb)\\MSSQLLocalDB;Initial Catalog = WinFormTest; Integrated Security = True";
         List<BinaryImg> list = null;
 
